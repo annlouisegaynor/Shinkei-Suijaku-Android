@@ -15,26 +15,32 @@ public class GameActivity extends AppCompatActivity {
 
     private static Button cards[] = new Button[16];
     private ArrayList<Integer> iconList = new ArrayList<Integer>();
-    private TextView hitTextView = (TextView)findViewById(R.id.hitTextView);
-    private TextView missTextView = (TextView)findViewById(R.id.missTextView);
     private static boolean endgame;
 
     private int hits = 0;
     private int misses = 0;
-    private int counter;
+    private int counter = 1;
 
     private int[] id = new int[2];
     private int[] value = new int[2];
+
+    private TextView hitTextView;
+    private TextView missTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        initTextViews();
         initCards();
         initArrayList();
     }
 
+    public void initTextViews(){
+        hitTextView = findViewById(R.id.hitTextView);
+        missTextView = findViewById(R.id.missTextView);
+    }
     public void initCards(){
         cards[0] = (Button)findViewById(R.id.button1);
         cards[1] = (Button)findViewById(R.id.button2);
@@ -55,30 +61,38 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void initArrayList(){
-        for (int y = 0; y < (cards.length /2); y++) {
+        for (int y = 0; y < (cards.length/2); y++) {
             iconList.add(y);
             iconList.add(y);
         }
-
         Collections.shuffle(iconList);
 
         //  CHEATS HAHAHAHAHAHAHAHA
-        int newLine = 0;
+        int character = 0;
+        String line = "";
+
         for (int a = 0; a < iconList.size(); a++) {
-            newLine++;
-            Log.d("cheats b0i", Integer.toString(iconList.get(a)));
-            if (newLine == 4) {
-                System.out.println();
-                newLine = 0;
+            line += iconList.get(a) + " ";
+            character++;
+            if (character == 4) {
+                line += "\n";
+                character = 0;
             }
         }
+        Log.d("cheats b0i", "\n" +line);
     }
 
     public boolean sameValues() {
         if (value[0] == value[1]) {
+            hits++;
+            hitTextView.setText(hits +"");
             return true;
         }
-        return false;
+        else{
+            misses++;
+            missTextView.setText(misses +"");
+            return false;
+        }
     }
 
     public static boolean isEndGame(){
@@ -86,31 +100,16 @@ public class GameActivity extends AppCompatActivity {
             if( cards[i].isEnabled() == false){
                 endgame = true;
             }
-            else endgame = false;
+            else return false;
         }
-        return endgame;
+        return true;
     }
 
     public void onCardClick(View v){
         for (int i = 0; i < cards.length; i++) {
             if (cards[i].getId() == v.getId()) {
-                cards[i].setText(iconList.get(i));
-                counter++;
+                cards[i].setText(iconList.get(i) +"");
 
-                if (counter == 3) {
-                    if (sameValues()) {
-                        cards[id[0]].setEnabled(false);
-                        cards[id[1]].setEnabled(false);
-                        hits++;
-                        hitTextView.setText(hits +"");
-                    } else {
-                        cards[id[0]].setText(R.string.a02_cards_default);
-                        cards[id[1]].setText(R.string.a02_cards_default);
-                        misses++;
-                        missTextView.setText(misses +"");
-                    }
-                    counter = 1;
-                }
                 if (counter == 1) {
                     id[0] = i;
                     value[0] = iconList.get(i);
@@ -118,7 +117,20 @@ public class GameActivity extends AppCompatActivity {
                 if (counter == 2) {
                     id[1] = i;
                     value[1] = iconList.get(i);
+
+                    if (sameValues()) {
+                        cards[id[0]].setEnabled(false);
+                        cards[id[1]].setEnabled(false);
+                        counter = 0;
+                    }
                 }
+
+                if (counter == 3){
+                    cards[id[0]].setText(R.string.a02_cards_default);
+                    cards[id[1]].setText(R.string.a02_cards_default);
+                    counter = 0;
+                }
+                counter++;
             }
         }
         if (isEndGame() == true){
